@@ -1,0 +1,35 @@
+{
+  "editionInfo": {
+    "editionType": "edition", "typeName": "Gouge", "typeRarity": 38, "index": 624, "states": [
+      {"layer": "Gouge", "state": "Blue", "rarity": 44},
+      {"layer": "Vision", "state": "Hyper", "rarity": 6}, {
+        "layer": "Noise", "state": "Candy Cig", "rarity": 11
+      }, {"layer": "Surface", "state": "Sockets", "rarity": 3},
+      {"layer": "Atmosphere", "state": "Probably", "rarity": 26}
+    ]
+  }
+}
+90
+
+
+{
+  "editionInfo": {
+    "editionType": "edition", "typeName": "Gouge", "typeRarity": 38, "index": 241, "states": [
+      {"layer": "Gouge", "state": "Blue", "rarity": 44},
+      {"layer": "Vision", "state": "Bandit Obvious", "rarity": 14},
+      {"layer": "Noise", "state": "G to the M", "rarity": 3},
+      {"layer": "Surface", "state": "White Worms", "rarity": 5},
+      {"layer": "Atmosphere", "state": "Universe", "rarity": 15}
+    ]
+  }
+}81
+
+{
+  "editionType": "edition", "typeName": "Gouge", "typeRarity": 38, "index": 184, "states": [
+  {"layer": "Gouge", "state": "Green", "rarity": 36},
+  {"layer": "Vision", "state": "Eth Hed", "rarity": 6},
+  {"layer": "Noise", "state": "Guzz", "rarity": 12},
+  {"layer": "Surface", "state": "Sideways Pink", "rarity": 12},
+  {"layer": "Atmosphere", "state": "Probably", "rarity": 26}
+  }
+92

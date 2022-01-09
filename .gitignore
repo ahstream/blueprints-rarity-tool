@@ -1,0 +1,12 @@
+/node_modules
+/.yalc
+yalc.lock
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+logs/**/*
+logfiles/**/*
+data/**/*
+
+.idea

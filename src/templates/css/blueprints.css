@@ -1,0 +1,163 @@
+
+a {
+  color: black;
+  text-decoration: none;
+  border-bottom: 1px dotted
+}
+
+a:active {
+  color: black;
+  text-decoration: none;
+  border-bottom: 1px solid
+}
+
+a:visited {
+  color: black;
+  text-decoration: none;
+  border-bottom: 1px dotted
+}
+
+a:hover {
+  color: black;
+  text-decoration: none;
+  border-bottom: 1px solid
+}
+
+hr {
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+  border-width: 0;
+  border-top: 1px solid var(--border-color-softer);
+}
+
+.sort-icon {
+  color: #fa3e96;
+}
+
+a.sort-icon, a:visited.sort-icon {
+  color: white;
+  text-decoration: none;
+  border: none;
+}
+
+a.sort-icon i {
+  color: #fa3e96;
+}
+
+a.sort-icon.selected {
+  color: white;
+  background: #fa3e96;
+}
+
+.page-header {
+  padding-bottom: 20px;
+  padding-bottom: 0px;
+}
+
+.floor {
+}
+
+.search {
+}
+
+#search-form {
+  margin-bottom: 0;
+}
+
+.edition-image img {
+  height: 300px;
+}
+
+td, th, table {
+  text-align: left;
+  white-space: nowrap;
+  vertical-align: top;
+  border-collapse: collapse;
+  border: 1px solid #ddd;
+  padding: 4px;
+}
+
+.content-data th table {
+  padding-top: 12px;
+  padding-bottom: 12px;
+  text-align: left;
+  background-color: #04AA6D;
+  color: white;
+}
+
+.thumb {
+  height: 120px;
+}
+
+thead {
+  background: black;
+  color: white;
+}
+
+.rankhtml-td {
+  background: #34d79b;
+  font-size: 100%;
+  text-align: center;
+}
+
+.tophtml-td {
+  background: #ebe544;
+  color: black;
+  text-align: center;
+}
+
+.tokenidhtml-td {
+  background: #34bfd8;
+}
+
+.rankhtml-th {
+  text-align: center;
+}
+
+.tophtml-th {
+  text-align: center;
+}
+
+#footnotes {
+  width: 60%;
+}
+
+.floor-image {
+  width: 60px;
+  height: 60px;
+}
+
+ul.cloud {
+  list-style: none;
+  padding-left: 0;
+  display: flex;
+  flex-wrap: wrap;
+  line-height: 2.5rem;
+  align-items: flex-start;
+  justify-content: left;
+  max-width: 1600px;
+}
+
+ul.cloud a {
+  display: block;
+  padding: 0.125rem 0.25rem;
+  text-decoration: none;
+  position: relative;
+}
+
+.cloud a {
+  text-decoration: none;
+  border: none;
+}
+
+.cloud a:active {
+  text-decoration: underline;
+}
+
+.cloud a:visited {
+  text-decoration: none;
+}
+
+.cloud a:hover {
+  text-decoration: underline;
+}
