@@ -1,0 +1,14 @@
+doctype html
+html
+block variables
+head
+  title #{title}
+  meta(name='description', content=description)
+  | <style type='text/css'>
+  include css/barebones.css
+  include css/normalize.css
+  include css/grifters.css
+  | </style>
+body
+  block content
+    | | !{content}

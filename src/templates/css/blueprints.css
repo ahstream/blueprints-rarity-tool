@@ -1,4 +1,8 @@
 
+.chart-container {
+  padding-top: 25px;
+}
+
 a {
   color: black;
   text-decoration: none;
@@ -50,14 +54,41 @@ a.sort-icon.selected {
 }
 
 .page-header {
-  padding-bottom: 20px;
-  padding-bottom: 0px;
+  padding-bottom: 0;
+}
+
+.header-text {
+  padding-top: 7px;
+}
+
+.service-note {
+  background: #ebe544;
+  color: black;
+  padding: 5px 8px;
+  margin-bottom: 10px;
+}
+
+.header-links {
+  padding: 15px 0;
 }
 
 .floor {
+  background: oldlace;
+  padding: 5px;
+  margin: 0;
+  max-width: 1500px;
+}
+
+.floor ul, li {
+  margin: 0;
+}
+
+.floor-image {
+  height: 60px;
 }
 
 .search {
+  padding-top: 15px;
 }
 
 #search-form {
@@ -66,6 +97,10 @@ a.sort-icon.selected {
 
 .edition-image img {
   height: 300px;
+}
+
+#footnotes {
+  width: 75%;
 }
 
 td, th, table {
@@ -85,7 +120,8 @@ td, th, table {
   color: white;
 }
 
-.thumb {
+.thumbnail {
+  width: 120px;
   height: 120px;
 }
 
@@ -116,15 +152,6 @@ thead {
 
 .tophtml-th {
   text-align: center;
-}
-
-#footnotes {
-  width: 60%;
-}
-
-.floor-image {
-  width: 60px;
-  height: 60px;
 }
 
 ul.cloud {

@@ -1,25 +1,35 @@
 {
-  "numTokens": 1982,
-  "skipOpensea": true,
+  "numTokens": 300,
+  "skipOpenseaFetchAssets": false,
+  "skipOpenseaFloorHistory": true,
   "slug": "async-blueprints",
   "contractAddress": "0xc143bbfcdbdbed6d454803804752a064a622c1f3",
   "baseTokenUri": "http://async-2.appspot.com/get-token?address=0xc143bbfcdbdbed6d454803804752a064a622c1f3&id={ID}",
   "baseHomeUrl": "https://async.art/blueprints/61b6c374bd2df4be86ef7aa5/editions/0xc143bbfcdbdbed6d454803804752a064a622c1f3-{ID}",
-  "collections": {
+  "image": "image_thumbnail_url",
+  "imageDimensions": "width: 120px; height: 120px;",
+  "collectionPrefs": {
     "Grifters": {
       "artist": "XCOPY",
       "artistUrl": "https://xcopy.art/",
-      "xxhomeUrl": "https: //async.art/blueprints/61b6c374bd2df4be86ef7aa5",
       "floors": ["Type", "Base Color"]
     },
     "DecentralEyesMashup": {
       "artist": "Coldie",
-      "xxhomeUrl": "https: //async.art/blueprints/61b6c92de494e26ccc207974",
+      "artistUrl": "https://coldie3d.com/",
       "floors": ["Signature"]
     },
     "Thousand Headers Coterie": {
       "artist": "Alotta Money",
-      "xxhomeUrl": "https: //async.art/blueprints/61b690d87b62f606e2a1dc19",
+      "artistUrl": "https://alottamoney.com/",
+      "image": "image_url",
+      "imageDimensions": "width: 256px;",
+      "floors": ["Uncommon Overlay"]
+    },
+    "Conquerors of the No Man's Land": {
+      "artist": "AnnaPaff",
+      "artistUrl": "https://www.behance.net/annapaff",
+      "imageDimensions": "height: 120px;",
       "floors": ["Type"]
     }
   },

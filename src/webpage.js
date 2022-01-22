@@ -2,14 +2,287 @@ import open from 'open';
 import { compileFile } from 'pug';
 import TableBuilder from 'table-builder';
 
-import { writeFile } from './hlib/fileutils.js';
+import { lineChartScriptHtml } from './d3Chart.js';
+import { ensureFolder, writeFile } from './hlib/fileutils.js';
 import { log } from './hlib/logger.js';
+import { compareOrderedNum, compareOrderedString } from './hlib/utils.js';
 
 const path = require('path');
 
 const IMAGE_NOT_FOUND_URL = 'https://www.publicdomainpictures.net/pictures/280000/velka/not-found-image-15383864787lu.jpg';
 
-export async function writeFiles(collection, runtime, config) {
+function rnd() {
+  rnd.seed = (rnd.seed * 9301 + 49597) % 533580;
+  return rnd.seed / (533580.0);
+};
+
+function rand(number) {
+  return Math.ceil(rnd() * number);
+}
+
+rnd.today = new Date();
+rnd.seed = rnd.today.getTime();
+
+const first_phrase = new Array('artless', 'bawdy', 'beslubbering', 'bootless', 'churlish', 'clouted',
+  'cockered', 'craven', 'currish', 'dankish', 'dissembling', 'droning', 'errant', 'fawning',
+  'fobbing', 'frothy', 'froward', 'gleeking', 'goatish', 'gorbellied', 'impertinent',
+  'infectious', 'jarring', 'loggerheaded', 'lumpish', 'mammering', 'mangled', 'mewling',
+  'paunchy', 'pribbling', 'puking', 'puny', 'qualling', 'rank', 'reeky', 'roguish', 'ruttish',
+  'saucy', 'spleeny', 'spongy', 'surly', 'tottering', 'unmuzzled', 'vain', 'venomed',
+  'villainous', 'warped', 'wayward', 'weedy', 'yeasty', 'abominable', 'accursed', 'adulterate', 'arrogant', 'babbling',
+  'barbarous', 'base', 'mumbling', 'overwheening', 'perfidious', 'pestilent', 'poisonous', 'pragging', 'rancorous', 'rascally',
+  'sanctimonious', 'shameless', 'slanderous', 'soulless', 'spongey', 'crusty', 'withered', 'loathed',
+  'tongueless', 'traitorous', 'unwholesome', 'viperous', 'greasy', 'obscene', 'beggarly', 'scandalous', 'creeping',
+  'lascivious', 'degenerate', 'meddling');
+
+const second_phrase = new Array('base-court', 'prick-eared', 'puisny-tilted', 'puke-stockinged', 'open-arsed', 'bat-fowling', 'beef-witted', 'beetle-headed',
+  'boil-brained', 'clapper-clawed', 'clay-brained', 'common-kissing', 'crook-pated',
+  'dismal-dreaming', 'dizzy-eyed', 'doghearted', 'dread-bolted', 'earth-vexing',
+  'elf-skinned', 'fat-kidneyed', 'fen-sucked', 'flap-mouthed', 'fly-bitten',
+  'folly-fallen', 'fool-born', 'full-gorged', 'guts-griping', 'half-faced', 'hasty-witted',
+  'hedge-born', 'hell-hated', 'idle-headed', 'ill-bred', 'ill-nurtured', 'knotty-pated',
+  'milk-livered', 'motley-minded', 'onion-eyed', 'plume-plucked', 'pottle-deep',
+  'pox-marked', 'reeling-ripe', 'rough-hewn', 'rude-growing', 'rump-fed', 'shard-borne',
+  'sheep-biting', 'spur-galled', 'swag-bellied', 'tardy-gaited', 'tickle-brained', 'white-livered',
+  'toad-spotted', 'urchin-snouted', 'weather-bitten', 'shag-haired', 'tallow-faced', 'beef-witted',
+  'decayed', 'deformed', 'muddy-mottled', 'hag-born', 'long-tongued', 'toad-spotted');
+
+const third_phrase = new Array('baggage', 'barnacle', 'bladder', 'boar-pig', 'bugbear',
+  'bum-bailey', 'canker-blossom', 'clack-dish', 'clotpole', 'codpiece', 'coxcomb', 'death-token',
+  'dewberry', 'flap-dragon', 'flax-wench', 'flirt-gill', 'foot-licker', 'fustilarian',
+  'giglet', 'gudgeon', 'haggard', 'harpy', 'hedge-pig', 'horn-beast', 'hugger-mugger',
+  'joithead', 'lewdster', 'lout', 'maggot-pie', 'malt-worm', 'mammet', 'measle', 'minnow',
+  'miscreant', 'moldwarp', 'mumble-news', 'nut-hook', 'pigeon-egg', 'pignut', 'pumpion',
+  'puttock', 'ratsbane', 'scut', 'skainsmate', 'strumpet', 'varlet', 'vassal', 'wagtail',
+  'whey-face', 'scullion', 'serpents-egg', 'callet', 'slug', 'bag of guts', 'punk', 'bitch-wolf', 'botch', 'withered-hag',
+  'mangy-dog', 'foul deformity', 'odiferous stench', 'no bowels', 'drunkard', 'turd', 'bear-whelp', 'eunuch',
+  'devil-incarnate', 'filthy rogue', 'vile worm', 'writhled shrimp', 'scurvy-knave', 'whore-master', 'malt-horse',
+  'varlet', 'worms-meat', 'canker-blossom', 'carrion', 'hag-seed', 'ruinous-butt', 'contriver', 'hypocrite', 'infection',
+  'imbossed carbunkle', 'eternal devil', 'execrable-wretch', 'murderous coward', 'foul adulterer', 'ingested-lump', 'wrinkled-witch',
+  'plebian', 'strumpet', 'horse-drench', 'promise-breaker', 'incontinent varlet', 'leprous witch', 'babbling gossip',
+  'tyrant', 'purified-cur', 'misbegotten-divel', 'mildewed-ear');
+
+function getgetInsult() {
+  const rand1 = rand(first_phrase.length) - 1;
+  const rand2 = rand(second_phrase.length) - 1;
+  const rand3 = rand(third_phrase.length) - 1;
+
+  return 'Thou ' + first_phrase[rand1] + ' ' + second_phrase[rand2] + ' ' + third_phrase[rand3];
+}
+
+function randomNotForSalePhrase() {
+  const phrases = [
+    'I want the finest wines available to humanity!',
+    'I feel like a pig shat in my head...',
+    'I demand to have some booze!',
+    'Black puddings are no good to us!',
+    'I\'m going to do the washing up!',
+    'I don\'t consciously offend big men like this!',
+    'Get any more masculine and you\'d have to live up a tree...',
+    'Get that damned little swine out of here!',
+    'Yet again that oaf has destroyed my day!',
+    'I mean to have you, even if it must be burglary!',
+    'Sherry? Oh dear no no...',
+    'I\'m preparing myself to forgive you...',
+    'I think you\'ve been punished enough...',
+    'I used to weep in butchers\' shops...',
+    'Go with it. It\'s society\'s crime, not ours...',
+    'You\'re looking very beautiful, man. You been away?',
+    'I been watching you, especially you...',
+    'Please, I don\'t feel good...',
+    'So, there\'s this judge sitting there in the cape like fucking Batman...',
+    'I could take double anything you could!',
+    'How dare you! How dare you!',
+    'Where\'s the whiskey?',
+    'Where are we?!',
+    'Would it be in bad form to plagiarise a toast?',
+    'I\'ve got nothing to sell!',
+    'What makes you possibly think I\'ve got anything for your pot?',
+    'I deny all accusations. What do you want?',
+    'I have just finished fighting a naked man!',
+    'I think we\'ve been in here too long. I feel unusual.',
+    'We can\'t go on like this...',
+    'I assure you I\'m not drunk...',
+  ];
+  return phrases[rand(phrases.length - 1)];
+}
+
+export async function writeGrifters(config) {
+  const compiledFunction = compileFile('src/templates/grifters.pug');
+
+  const isGrifter = (asset) => asset.description === 'Grifters gonna grift!' || Number(asset.token_id) < 275;
+
+  let s = '';
+
+  s = s + '<script>function goto(url) { window.open(url, "_blank"); }</script>';
+
+  // s = s + `<div onclick="location.href='grifters-by-xcopy.html';" style="cursor: pointer;">`;
+  s = s + `<div style="cursor: pointer;">`;
+  // s = s + `<a href="xxx"><div title="Grifters gonna grift!">`;
+  let ct = 0;
+  const assets = config.runtime.assets.sort((a, b) => compareOrderedNum(Number(b.token_id), Number(a.token_id)));
+  console.log(assets.map(obj => obj.token_id));
+  for (let asset of assets) {
+    if (isGrifter(asset)) {
+      console.log(asset.token_id);
+      const insult = getgetInsult();
+      // const title = asset.listing_price ? `${insult}, buy me NOW for ${asset.listing_price} ETH!` : `${randomNotForSalePhrase()}`;
+      const title = `${insult}! ${randomNotForSalePhrase()}`;
+      // s = s + `<img class="grifter_thumb" src="${asset.image_thumbnail_url}" loading="lazy" />`;
+      s = s + `<img class="thumb" src="${asset.image_thumbnail_url}" loading="lazy" title="${title}" onclick="goto('${asset.permalink}')" />`;
+      ct++;
+    }
+  }
+  s = s + '</div>';
+  /*
+  s = s + `<div class="about">
+    <a href="mailto:0xhstream@gmail.com">0xhstream@gmail.com</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
+    <a href="https://twitter.com/0xHstream" target="_blank">https://twitter.com/0xHstream</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
+    <a href="https://0xhstream.github.io/grifters.html">Grifters by XCOPY Rarity Ranking and Other Stats</a>`;
+       */
+  s = s + `<div class="about">
+            <a href="./blueprints.html">Rarity and Other Stats</a><!--&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
+            <a href="./grifters-gonna-claim.html">Claim this site</a>-->
+           </div>`;
+  console.log('ct', ct);
+
+  const html = compiledFunction({
+    title: 'Grifters by XCOPY',
+    description: 'Grifters, XCOPY, Async Art, Blueprint, NFT, Cryptoart',
+    content: s,
+  });
+
+  ensureFolder(path.resolve(global.__datadir, 'grifters'));
+  const filepath = path.resolve(global.__datadir, 'grifters', 'grifters-gonna-grift.html');
+  writeFile(filepath, html);
+  open(filepath, { app: 'chrome' });
+}
+
+export async function writeGriftersGonnaClaim(config) {
+  let s = '';
+  s = s + `
+    <div class="box">
+      <div class="row header">
+      </div>
+      <div class="row content claim">
+        <p>
+          If you are XCOPY and don't approve of this site, contact <a href="mailto:0xhstream@gmail.com">me</a><br>and I'll take it down and transfer the grifters.io domain to you.
+        </p>
+        <p>Any fun ideas for content on this domain?</p>
+      </div>
+      <div class="row footer">
+      </div>
+    </div>
+  `;
+
+  const compiledFunction = compileFile('src/templates/grifters-gonna-claim.pug');
+  const html = compiledFunction({
+    title: 'Grifters gonna claim!',
+    description: 'Grifters, XCOPY, Async Art, Blueprint, NFT, Cryptoart',
+    content: s,
+  });
+
+  ensureFolder(path.resolve(global.__datadir, 'grifters'));
+  const filepath = path.resolve(global.__datadir, 'grifters', 'grifters-gonna-claim.html');
+  writeFile(filepath, html);
+  open(filepath, { app: 'chrome' });
+}
+
+export async function test() {
+  const compiledFunction = compileFile('src/templates/test.pug');
+
+  const html = compiledFunction({
+    title: 'custom title',
+    description: 'custom description',
+    header: 'header',
+    mainContent: 'mainContent',
+    footnotes: 'footnotes',
+  });
+
+  const filepath = path.resolve(global.__datadir, 'test.html');
+  writeFile(filepath, html);
+  open(filepath, { app: 'chrome' });
+}
+
+export async function chartTest(data) {
+  /*
+  var data = [
+    { x: new Date('2007-04-01'), y: 93.24 },
+    { x: new Date('2007-04-02'), y: 91.35 },
+    { x: new Date('2007-04-03'), y: 75.35 },
+    { x: new Date('2007-04-04'), y: 93.24 },
+    { x: new Date('2007-04-05'), y: 91.35 },
+    { x: new Date('2007-04-06'), y: 75.35 },
+    { x: new Date('2007-04-07'), y: 75.35 },
+    { x: new Date('2007-04-08'), y: 75.35 },
+    { x: new Date('2007-04-09'), y: 75.35 },
+    { x: new Date('2007-04-10'), y: 75.35 },
+  ];
+  */
+
+  const compiledFunction = compileFile('src/templates/chart.pug');
+
+  const html = compiledFunction({
+    title: 'custom title',
+    description: 'custom description',
+    header: 'header',
+    chart: createChart('chart', data, 1500, 800, 'All Time Floor Price for Grifters by XCOPY', 'steelblue'),
+    mainContent: 'htmlTable',
+    footnotes: 'footnotes',
+  });
+
+  const filepath = path.resolve(global.__datadir, 'chart.html');
+  writeFile(filepath, html);
+  open(filepath, { app: 'chrome' });
+}
+
+export function createIndexFile(config) {
+  const index = Object.keys(config.runtime.collections).map(key => {
+    const obj = config.runtime.collections[key];
+    if (!obj.tokens || !obj.tokens[0]) {
+      return '';
+    }
+    return `<p><a href="${normalizeFilename(obj.tokens[0]?.edition_name)}.html">${createTitle(obj)}</a></p>`;
+  }).join('\n');
+
+  const content = `
+  <h1>Grifters gonna grift!</h1>
+
+  <p>
+  Keeping this page updated is way too much work!
+  <br>
+  Grifters by XCOPY page will be published here without price data:
+  <br><br>
+  <b><a href="grifters.html">Grifters by XCOPY rarity rankings</a></b>
+  <br><br>
+
+    For rarity rankings and price data of <a href="https://async.art/blueprints" target="_blank">all Blueprint collections</a>,
+    <br>
+    I can create an updated set of pages for 0.25 ETH.
+    <br><br>
+    Email: <a href="mailto:0xhstream@gmail.com">0xhstream@gmail.com</a>
+    <br><br>
+Examples of rare items (Jan 22, 2022) to buy:
+<br><br>
+
+<img src="./example-buy.png" />
+  `;
+
+  const compiledFunction = compileFile('src/templates/index.pug');
+
+  const html = compiledFunction({
+    title: 'Grifters by XCOPY and other Blueprint collections',
+    description: 'Grifters, XCOPY, Async Art, Blueprint, NFT, Cryptoart',
+    content: content,
+  });
+
+  const filepath = path.resolve(global.__datadir, 'blueprints', 'index.html');
+  writeFile(filepath, html);
+
+  open(filepath, { app: 'chrome' });
+}
+
+export async function createCollectionFiles(config, collection) {
   log.info('Write files for collection:', collection.name);
 
   const baseFilename = normalizeFilename(collection.name);
@@ -21,27 +294,24 @@ export async function writeFiles(collection, runtime, config) {
     lastPrice: `${baseFilename}-last-price.html`,
     lastDays: `${baseFilename}-last-days.html`,
     numSales: `${baseFilename}-num-sales.html`,
+    owner: `${baseFilename}-owner.html`,
     token: `${baseFilename}-token.html`,
   };
 
-  const dataSource = createDataSource(collection, runtime);
+  const dataSource = createDataSource(config, collection);
 
   for (let key of Object.keys(filenames)) {
     const filename = filenames[key];
     log.info('Write file:', filename);
-    const html = await createPage(collection, dataSource, filename, filenames, config);
-    const filepath = path.resolve(global.__datadir, filename);
+    const html = await createCollectionPageHtml(config, collection, dataSource, filename, filenames);
+    const filepath = path.resolve(global.__datadir, 'blueprints', filename);
     writeFile(filepath, html);
   }
 
-  open(path.resolve(global.__datadir, `${baseFilename}.html`), { app: 'chrome' });
+  open(path.resolve(global.__datadir, 'blueprints', `${baseFilename}.html)`), { app: 'chrome' });
 }
 
-function normalizeFilename(name) {
-  return name.replace(/[^a-z0-9]/gi, '-').toLowerCase();
-}
-
-export async function createPage(collection, dataSource, filename, filenames, config) {
+export async function createCollectionPageHtml(config, collection, dataSource, filename, filenames) {
   const selectedData = getSelectedData(dataSource, filename);
 
   const makeHeader = (filename, header, title) => `<a href="./${filename}" title="${title}" class="sort-icon">${header} <i class="fa fa-sort"></i></a>&nbsp;`;
@@ -63,7 +333,7 @@ export async function createPage(collection, dataSource, filename, filenames, co
     'tokenIdHtml': makeHeader(filenames.token, 'Token ID', 'Sort by token ID'),
   };
 
-  const header = createHeader(collection, dataSource, selectedData, config);
+  const header = createHeader(config, collection, dataSource, selectedData);
   const footnotes = createFootnotes(config, filename);
 
   const selectedSortColumnStyleKeys = [
@@ -77,22 +347,46 @@ export async function createPage(collection, dataSource, filename, filenames, co
     { f: filenames.token, v: 'tokenidhtml-th' }
   ];
   const selectedSortColumnStyle = selectedSortColumnStyleKeys.find(obj => obj.f === filename)?.v;
-
   const selectedSortColumnStyleHtml = `<style>.${selectedSortColumnStyle} { background: #fa3e96 }</style>`;
+
+  const editionName = collection.tokens[0].edition_name;
+  const imageDimensions = config.collectionPrefs[editionName]?.imageDimensions ?? config.imageDimensions;
+  const imageSizeStyleHtml = `<style>.thumbnail { ${imageDimensions} }</style>`;
 
   const htmlTable = new TableBuilder({ 'class': 'main-table' })
       .setHeaders(headers)
       .setData(dataSource)
-      .render() + selectedSortColumnStyleHtml
+      .render()
+    + selectedSortColumnStyleHtml
+    + imageSizeStyleHtml
     || 'Data collection is empty!';
 
   const compiledFunction = compileFile('src/templates/collection.pug');
 
   return compiledFunction({
+    title: createTitle(collection),
+    description: createDescription(collection),
     header,
     mainContent: htmlTable,
     footnotes,
   });
+}
+
+function createChart(runtime, editionName, artist) {
+  const data = runtime.floorHistory.filter(obj => obj.edition_name === editionName)
+    .filter(obj => obj.short_date && obj.floor_price)
+    .map(obj => {
+      return { x: obj.short_date, y: obj.floor_price };
+    });
+
+  return createChartScriptHtml('chart', data, 600, 400, `All Time Floor Price for ${normalizeFilename(editionName)} by ${artist}`);
+}
+
+function createChartScriptHtml(chartElemId, data, width, height, yLabel, color = 'steelblue') {
+  return `
+    <div class="chart-container" id='chart'></div>
+    ${lineChartScriptHtml(chartElemId, data, width, height, yLabel, color)}
+  `;
 }
 
 function getSelectedData(dataSource, filename) {
@@ -121,16 +415,19 @@ function getSelectedData(dataSource, filename) {
   return dataSource.sort((a, b) => compareOrderedNum(a.score_rank, b.score_rank, true));
 }
 
-function createDataSource(collection, runtime) {
+function createDataSource(config, collection) {
   return collection.tokens.map(tokenData => {
       const token = { ...tokenData };
 
-      const asset = runtime.assets?.find(obj => obj.token_id === token.token_id);
+      const asset = config.runtime.assets?.find(obj => obj.token_id === token.token_id);
 
       token.asset = asset;
 
-      const imageUrl = token.image_thumbnail_url ?? IMAGE_NOT_FOUND_URL;
-      const imageHtml = `<a target="_blank" href="${token.permalink}"><img src='${imageUrl}' class='thumb' title='${createThumbImageTitle(token, collection.tokens.length)}'></a>`;
+      const editionName = collection.tokens[0].edition_name;
+      const imageVarName = config.collectionPrefs[editionName]?.image ?? config.imageD;
+
+      const imageUrl = token[imageVarName] ?? token.image_preview_url ?? token.image_thumbnail_url ?? token.image_url ?? IMAGE_NOT_FOUND_URL;
+      const imageHtml = `<a target='_blank' href='${token.permalink}'><img src='${imageUrl}' class='thumbnail' title='${createThumbImageTitle(token, collection.tokens.length)}'></a>`;
 
       const nameParts = token.name.split('#');
       const nameHash = nameParts.length === 2 ? `#${nameParts[1]}` : '';
@@ -151,7 +448,7 @@ function createDataSource(collection, runtime) {
       const ownerHtml = `<a target="_blank" href="${ownerUrl}">${normalizeUsernameText(token.owner_opensea ?? token.owner_async)}</a> (${token.num_owned} pcs)`;
 
       const openseaHtml = `<a target="_blank" href="${token.permalink}">OpenSea</a>`;
-      const homePageHtml = `<a target="_blank" href="${token.home_url}">AsyncArt</a>`;
+      const homePageHtml = `<a target="_blank" href="${token.home_url}">Async Art</a>`;
 
       const scoreHtml = `${token.score.toFixed(2)} pts`;
 
@@ -176,44 +473,8 @@ function createDataSource(collection, runtime) {
 
       return { ...token, ...tokenHtml };
     }
-  );
-}
-
-function compareOrderedNum(a, b, ascending) {
-  if (typeof a !== 'number' && typeof b !== 'number') {
-    return 0;
-  }
-  if (typeof a !== 'number') {
-    return 1;
-  }
-  if (typeof b !== 'number') {
-    return -1;
-  }
-  if (a === b) {
-    return 0;
-  }
-  return ascending ? a - b : b - a;
-}
-
-function compareOrderedString(a, b, ascending) {
-  const aUpper = a.toUpperCase();
-  const bUpper = b.toUpperCase();
-  if (typeof aUpper !== 'string' && typeof bUpper !== 'string') {
-    return 0;
-  }
-  if (typeof aUpper !== 'string') {
-    return 1;
-  }
-  if (typeof bUpper !== 'string') {
-    return -1;
-  }
-  if (aUpper === bUpper) {
-    return 0;
-  }
-  if (ascending) {
-    return aUpper > bUpper ? 1 : -1;
-  }
-  return bUpper > aUpper ? 1 : -1;
+  )
+    ;
 }
 
 function compareOwner(a1, b1, ascending1, a2, b2, ascending2) {
@@ -226,78 +487,91 @@ function compareOwner(a1, b1, ascending1, a2, b2, ascending2) {
   return compareOrderedString(a2, b2, ascending2);
 }
 
-function normalizePlural(num, singular, plural) {
-  return num === 1 ? singular : plural;
+function createTitle(collection) {
+  return `${collection.tokens[0]?.edition_name} by ${collection.tokens[0]?.edition_artist}`;
 }
 
-function createHeader(collection, dataSource, selectedData, config) {
+function createHeaderTitle(collection) {
+  return `${createTitle(collection)}: Rarity Rankings and Other Stats`;
+}
+
+function createDescription(collection) {
+  return `${collection.tokens[0]?.edition_name} by ${collection.tokens[0]?.edition_artist}: Rarity Rankings and Other Stats, ${collection.tokens[0]?.edition_artist}, Async Art, Blueprints, NFT, Cryptoart`;
+}
+
+function createHeader(config, collection, dataSource, selectedData) {
   const modifiedText = collection.modified ? collection.modified.toLocaleString() : 'Unknown';
   const artist = collection.tokens[0].edition_artist;
   const capacity = collection.tokens[0].capacity;
   const editionName = collection.tokens[0].edition_name;
-  const editionUrl = collection.tokens[0].edition_url;
 
-  const artistUrl = config.collections[editionName]?.artistUrl ?? null;
-  const artistWebPageHtml = artistUrl ? `<a href="${artistUrl}" target="_blank">${artist} Web Page</a>&nbsp;&nbsp;|&nbsp;&nbsp;` : '';
+  const artistUrl = config.collectionPrefs[editionName]?.artistUrl ?? null;
+  const artistWebPageHtml = artistUrl ? `<a href="${artistUrl}" target="_blank">Artist Web Page</a>&nbsp;&nbsp;|&nbsp;&nbsp;` : '';
+
+  const chartHtml = ''; // createChart(config.runtime, editionName, artist);
 
   return `
-    <h1>${collection.tokens[0].edition_name} by ${collection.tokens[0].edition_artist}: Rarity Rankings and Other Stats</h1>
-        <div class="page-header">
+    <div class="page-header">
+
+<!--
+    <div class="service-note">
+      This is a free to use service. To support further development, feel free to make a contribution:
+      <a href="https://etherscan.io/address/0x8C72070AA747F3F314a34Bd8bc741FCa6713F81C"
+         target="_blank">0x8C72070AA747F3F314a34Bd8bc741FCa6713F81C</a>
+    </div>
+    -->
+
+  <div class="header-text">
+    <h1>${createHeaderTitle(collection)}</h1>
+    </div>
          <form action="#" method="get" id="search-form" name="query"
         onSubmit="var e=document.getElementById(this.gid.value); if (!e) { document.getElementById('search-result').style.visibility='visible'; return false}; document.getElementById('search-result').style.visibility='hidden'; var rect=e.getBoundingClientRect(); window.scroll(0, rect.top); return false;">
 
-         <!-- <div>See disclaimers and notes at <a href="#footnotes">bottom of page</a>.</div> -->
          <div class="edition-image"><img src="${collection.tokens[0].edition_image_url}"></div>
 
-         <div class="">
+         <div class="header-links">
+          <a href="${collection.tokens[0].edition_url}" target="_blank">Collection Home Page</a>&nbsp;&nbsp;|&nbsp;&nbsp;
             ${artistWebPageHtml}
-            <a href="${editionUrl}" target="_blank">Collection Web Page</a>&nbsp;&nbsp;|&nbsp;&nbsp;
-            <a href="https://async.art/blueprints" target="_blank">Explore Async Art Blueprints</a>&nbsp;&nbsp;|&nbsp;&nbsp;
-            <a href="#footnotes">Disclaimers and Notes</a>
-            <br><br></div>
+            <a href="./blueprints/index.html">Rarity and Stats for more Blueprint Collections</a>
+         </div>
 
          <div class="floor">${createFloor(collection.floors)}</div>
 
+<!--
+
+         ${chartHtml}
+         -->
+
          <div class="search">
-         1-${selectedData.length} of ${collection.tokens.length} minted tokens (max capacity: ${capacity}). Updated: ${modifiedText}. Go to Name # or Token ID:
+         <b>Updated: ${modifiedText}</b>&nbsp;&nbsp;|&nbsp;&nbsp;
+         1-${selectedData.length} of ${collection.tokens.length} minted tokens (max capacity: ${capacity})&nbsp;&nbsp;|&nbsp;&nbsp;
+         Go to Name # or Token ID:
             <input type="text" size="16" name="gid" onfocus='this.value=""' placeholder="#123">
             <span id="search-result" style="visibility: hidden">Not found</span>
         </div>
-       <!-- <div>1-${selectedData.length} of ${collection.tokens.length} minted tokens (of total capacity ${capacity}). Updated: <b>${modifiedText}</b></div>-->
         </form>
       </div>`;
 }
 
 function createFootnotes(config, filename) {
-  return `<div id="footnotes">
-  <p><b>DISCLAIMERS AND NOTES:</b></p>
-  <p>This web page is not connected to Async Art in any way. It is just a web app set up
-    to have more fun following the Async Art Blueprint collections. If people associated with the collection does not
-    want the web page to exist for any reason, I will take it down from public access and make it
-    private.</p>
-  <p>Rarity.tools ranking method used with Trait Normalization ${config.rules.normalize ? 'On' : 'Off'},
-    Trait Count ${config.rules.traitCount ? 'On' : 'Off'}, Additional Weight ${config.rules.additionalWeight ? 'On' : 'Off'}.
-    Traits are fetched from Async Art token page and calculated by frequency (and not by value on token page).
-    This may or may not represent an actual rarity for this collection. And traits rarity may not
-    matter much anyway, who knows, aesthetics may be more important and people simply buy what they
-    like. Anyway, use with own discretion, not financial advice, DYOR, etc.</p>
-  <p>Page is updated manually right now. I might make it automatic some day.</p>
-    <!--<br>
-    <a
-      href="https://opensea.io/assets/async-blueprints?search[sortAscending]=true&search[sortBy]=PRICE&search[stringTraits][0][name]=Artist&search[stringTraits][0][values][0]=XCOPY">OpenSea Grifters collection page</a><br>
-    <a href="https://xcopy.art/">CryptoArt by XCOPY</a>-->
-    </p>
+  return `
+  <p id="footnotes">
+    <p><b>DISCLAIMERS AND NOTES:</b></p>
+    <p>This web page is not associated with Async Art or any artist. Rarity.tools ranking method used with
+      Trait Normalization ${config.rules.normalize ? 'On' : 'Off'},
+      Trait Count ${config.rules.traitCount ? 'On' : 'Off'}, Additional Weight ${config.rules.additionalWeight ? 'On' : 'Off'}.
+      This may or may not represent an actual rarity for this collection. And traits rarity may not
+      matter much anyway, who knows, aesthetics may be more important and people simply buy what they
+      like. Anyway, use with own discretion, not financial advice, DYOR, etc.</p>
 
 <!--
-  <p>Some links:
-  <ul>
-    <li><a href="https://async.art/blueprints/61b6c374bd2df4be86ef7aa5">Async Art Grifters collection page</a></li>
-    <li><a
-      href="https://opensea.io/assets/async-blueprints?search[sortAscending]=true&search[sortBy]=PRICE&search[stringTraits][0][name]=Artist&search[stringTraits][0][values][0]=XCOPY">OpenSea Grifters collection page</a></li>
-    <li><a href="https://xcopy.art/">CryptoArt by XCOPY</a></li>
-  </ul>
-  </p>
-  -->
+    <p>
+      This is a free to use service. To support further development, feel free to make a contribution:
+      <a href="https://etherscan.io/address/0x8C72070AA747F3F314a34Bd8bc741FCa6713F81C"
+         target="_blank">0x8C72070AA747F3F314a34Bd8bc741FCa6713F81C</a>
+    </p>
+    -->
+
   </div>
   <hr>
   By: <img class="floor-image"
@@ -306,53 +580,45 @@ function createFootnotes(config, filename) {
     <a href="https://twitter.com/0xHstream" target="_blank">https://twitter.com/0xHstream</a> &nbsp; | &nbsp;
     <a href="mailto:0xHstream@gmail.com" target="_blank">0xHstream@gmail.com</a> &nbsp; | &nbsp;
     <img src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2F0xhstream.github.io%2F${filename}&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=Hits&edge_flat=false"/>
-
-
-    <!--
-    <img src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2F0xhstream.github.io%2Fgrifters.html&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=Hits&edge_flat=false"/>
- -->
   `;
 }
 
-function createFloor(collectionFloors) {
+function createFloor(floors) {
   let html = '';
   const add = (s) => html = html + s;
 
+  if (floors.length < 1) {
+    add('Floor: No data found');
+    return html;
+  }
+
   add('<ul class="cloud" role="navigation">');
-  for (let floor of collectionFloors) {
-    const price = floor.data.price > 0 ? normalizePrice(floor.data.price) : (floor.data.token_id !== undefined ? 'Not for sale' : 'Floor not found');
+  for (let floor of floors) {
+    const price = floor.data.price > 0 ? normalizePrice(floor.data.price) : (floor.data.token_id !== undefined ? 'Not for sale' : 'Not found');
     const weight = floor.data.price ? Math.round(floor.data.price) : 0;
     const normalizedWeight = weight > 100 ? 100 : (weight < 0 ? 0 : weight);
     const permalink = floor.data.permalink;
     const imageUrl = floor.data.image_thumbnail_url ?? IMAGE_NOT_FOUND_URL;
-    add(`<li><a target="_blank" href="${permalink}"><img class="floor-image" src="${imageUrl}"> ${floor.name} Floor: ${price}</a></li>`);
+    add(`<li><a target="_blank" href="${permalink}"><img class="floor-image" src="${imageUrl}"> ${floor.name} (${floor.qty ?? '?'} pcs) Floor: ${price} ETH</a></li>`);
   }
   add('</ul>');
 
   return html;
 }
 
-function normalizeDescription(val) {
-  return val.replaceAll('\'', '´');
-}
-
 function createThumbImageTitle(token, numTokens) {
   const traits = [...token.traits].sort((a, b) => b.score - a.score);
-  const traitsTextBak = traits.map(trait => `${trait.score.toFixed(2)} pts - ${trait.trait_type}: ${trait.value} - ${trait.num_with_this_trait} of ${numTokens} (${normalizePct(trait.freq * 100)}%)`).join('\n');
-  const traitsTextBak2 = traits.map(trait => `[${trait.score.toFixed(2)} pts] ${trait.trait_type}: ${trait.value} (${normalizePct(trait.freq * 100)}%)`).join('\n');
-  const traitsText3 = traits.map(trait => `${trait.score.toFixed(2)} pts [${normalizePct(trait.freq * 100)}%] ${trait.trait_type}: ${trait.value}`).join('\n');
   const traitsText = traits.map(trait => `${normalizePct(trait.freq * 100)}%   ${trait.trait_type}: ${trait.value}   (${trait.num_with_this_trait} of ${numTokens})   (${trait.score.toFixed(2)} pts)`).join('\n');
-  const levelsText = token.levels.map(level => `${level.trait_type}: ${level.value}`).join('\n');
   let s = '';
+  s = s + `Token ID: ${token.token_id}`;
+  s = s + `\n`;
   s = s + `Name: ${token.name}`;
   s = s + `\n\n`;
   /*
   s = s + `Description: ${normalizeDescription(token.description)}`;
   s = s + `\n\n`;
   */
-  s = s + `Token ID: ${token.token_id}`;
-  s = s + `\n\n`;
-  s = s + `Rarity rank: ${token.scoreRank}`;
+  s = s + `Rarity rank: ${token.score_rank}`;
   s = s + `\n`;
   s = s + `Top: ${normalizePct(token.score_top * 100, '')}%`;
   s = s + `\n`;
@@ -363,20 +629,20 @@ function createThumbImageTitle(token, numTokens) {
   s = s + `${traitsText}`;
   s = s + `\n\n`;
   s = s + `\n\n`;
-  /*
-  s = s + Object.entries(token.tokenURIMetadata)
-    .map(([key, value]) => {
-      if (typeof value !== 'object') {
-        return `${key}: ${value.toString()}`;
-      } else {
-        return null;
-      }
-    })
-    .filter(obj => obj !== null)
-    .join('\n');
-   */
 
   return s;
+}
+
+function normalizeFilename(name) {
+  return name.trim().replace(/[^a-z0-9]/gi, '-').trim().toLowerCase();
+}
+
+function normalizePlural(num, singular, plural) {
+  return num === 1 ? singular : plural;
+}
+
+function normalizeDescription(val) {
+  return val.replaceAll('\'', '´');
 }
 
 function normalizePrice(val, defaultDecimals = 3, undefinedResult = '', suffix = '') {

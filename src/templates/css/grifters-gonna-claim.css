@@ -1,0 +1,76 @@
+html,
+body {
+  background-image: url("grifters-gonna-background.png");
+  height: 100%;
+  margin: 0;
+  font-size: 20px;
+}
+
+.box {
+  display: flex;
+  flex-flow: column;
+  height: 100%;
+}
+
+.box .row {
+}
+
+.box .row.header {
+  height: 38%;
+}
+
+.box .row.content {
+  flex: 1 1 auto;
+}
+
+.box .row.footer {
+  height: 62%;
+}
+
+.claim {
+  text-align: center;
+  color: white;
+}
+
+.center {
+  height: 200px;
+  position: relative;
+}
+
+.center p {
+  margin: 0;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+a {
+  color: white;
+  text-decoration: none;
+  border-bottom: 1px dotted
+}
+
+a:active {
+  color: white;
+  text-decoration: none;
+  border-bottom: 1px solid
+}
+
+a:visited {
+  color: white;
+  text-decoration: none;
+  border-bottom: 1px dotted
+}
+
+a:hover {
+  color: white;
+  text-decoration: none;
+  border-bottom: 1px solid
+}
+
+.about {
+  text-align: center;
+  color: white;
+  margin: 25px 0 15px 0;
+}

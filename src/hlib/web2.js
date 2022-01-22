@@ -56,7 +56,7 @@ async function request(options) {
     const id = setTimeout(() => abort.cancel('timeout'), timeout);
     const allOptions = { ...options, timeout, cancelToken: abort.token };
 
-    console.info('web2.request URL:', allOptions.url);
+    // console.info('web2.request URL:', allOptions.url);
     const response = allOptions.keepAlive ? await keepAliveAxios(allOptions) : await axios(allOptions);
     clearTimeout(id);
     return response;

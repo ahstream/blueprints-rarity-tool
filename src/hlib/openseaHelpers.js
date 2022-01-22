@@ -4,6 +4,7 @@
  */
 
 import * as opensea from './opensea.js';
+import { EVENTS_LIMIT } from './opensea.js';
 
 const API_KEY = '34d2961db6c14d319ab19ffc818c8b1b';
 const DEFAULT_RETRY_FOR_SEC = 60;
@@ -43,6 +44,14 @@ export async function getAssetsWithRetry(contractAddress, options = {}, requestO
   return opensea.getAssets(API_KEY, contractAddress, options, requestOptions, retryFor, retryInterval);
 }
 
+export async function getEvents(contractAddress, options = {}, requestOptions = {}) {
+  return getEventsWithRetry(contractAddress, options, requestOptions, null, null);
+}
+
+export async function getEventsWithRetry(contractAddress, options = {}, requestOptions = {}, retryFor = DEFAULT_RETRY_FOR_SEC, retryInterval = DEFAULT_RETRY_INTERVAL_MS) {
+  return opensea.getEvents(API_KEY, contractAddress, options, requestOptions, retryFor, retryInterval);
+}
+
 // MAIN FUNCTIONS
 
 export async function getAssetsBlock(contractAddress, blockSize, fromOffset = 0, options = {}, requestOptions = {}) {
@@ -50,7 +59,6 @@ export async function getAssetsBlock(contractAddress, blockSize, fromOffset = 0,
 }
 
 export async function getAssetsBlockWithRetry(contractAddress, blockSize, fromOffset = 0, options = {}, requestOptions = {}, retryFor = DEFAULT_RETRY_FOR_SEC, retryInterval = DEFAULT_RETRY_INTERVAL_MS) {
-  console.log(contractAddress, blockSize, fromOffset);
   const assets = [];
   let numToFetch = blockSize;
   let offset = fromOffset;
@@ -71,6 +79,34 @@ export async function getAssetsBlockWithRetry(contractAddress, blockSize, fromOf
     offset = offset + assetsBatch.length;
   }
   return assets.flat();
+}
+
+export async function getEventBlock(contractAddress, blockSize, fromOffset = 0, options = {}, requestOptions = {}) {
+  return getEventBlockWithRetry(contractAddress, blockSize, fromOffset, options, requestOptions, null, null);
+}
+
+export async function getEventBlockWithRetry(contractAddress, blockSize = EVENTS_LIMIT, fromOffset = 0, options = {}, requestOptions = {}, retryFor = DEFAULT_RETRY_FOR_SEC, retryInterval = DEFAULT_RETRY_INTERVAL_MS) {
+  const events = [];
+  let offset = fromOffset;
+
+  while (true) {
+    console.log(`Get ${blockSize} events from offset: ${offset}`);
+    const eventBatch = await opensea.getEvents(API_KEY, contractAddress, {
+      ...options,
+      limit: blockSize,
+      offset
+    }, requestOptions, retryFor, retryInterval);
+    if (eventBatch.error) {
+      return eventBatch;
+    }
+    if (eventBatch?.length === 0) {
+      break;
+    }
+    events.push(eventBatch);
+    offset = offset + eventBatch.length;
+  }
+
+  return events.flat();
 }
 
 export async function getCollectionFloor(slug, requestOptions = {}) {

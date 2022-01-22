@@ -6,6 +6,7 @@
 import * as web2 from './web2.js';
 
 export const ASSETS_LIMIT = 50;
+export const EVENTS_LIMIT = 50;
 export const BASE_ASSET_URI = 'https://opensea.io/assets';
 export const BASE_URI = 'https://opensea.io';
 
@@ -15,7 +16,6 @@ export const BASE_URI = 'https://opensea.io';
  * requestOptions: { keepAlive: boolean, timeout: number }
  */
 export async function getCollectionStats(apiKey, slug, requestOptions = {}, retryFor = null, retryInterval = null) {
-  console.log(apiKey, slug, requestOptions);
   const headers = apiKey ? { 'X-API-KEY': apiKey } : {};
   const url = `https://api.opensea.io/api/v1/collection/${slug}/stats`;
 
@@ -65,25 +65,71 @@ export async function getAssets(apiKey, contractAddress, options = {}, requestOp
 
   const headers = apiKey ? { 'X-API-KEY': apiKey } : {};
   const url = `https://api.opensea.io/api/v1/assets?asset_contract_addresses=${contractAddress}&` +
-    `order_direction=${newOptions.direction}&offset=${newOptions.offset}&limit=${newOptions.limit}` +
+    `order_direction=${newOptions.direction}&limit=${newOptions.limit}&offset=${newOptions.offset}` +
     `${newOptions.tokenIds?.length ? `&token_ids=${newOptions.tokenIds.join('%2C')}` : ''}`;
 
   const response = retryFor
-    ? await web2.getWithRetry(url, { headers, ...requestOptions }, retryFor, retryInterval)
-    : await web2.get(url, { headers, ...requestOptions });
+    ? await web2.getWithRetry(url, { headers, keepAlive: true, ...requestOptions }, retryFor, retryInterval)
+    : await web2.get(url, { headers, keepAlive: true, ...requestOptions });
 
   if (response.data?.assets) {
-    return options.convert ? response.data.assets.map(obj => convertAsset(obj)) : response.data.assets;
+    return newOptions.convert ? response.data.assets.map(obj => convertAsset(obj)) : response.data.assets;
   }
 
   return response;
 }
 
+export async function getEvents(apiKey, contractAddress, options = {}, requestOptions = {}, retryFor = null, retryInterval = null) {
+  const defaultOptions = {
+    tokenIds: null,
+    limit: EVENTS_LIMIT,
+    offset: 0,
+    eventType: 'created',
+    onlyOpensea: false,
+    convert: true,
+  };
+  const newOptions = { ...defaultOptions, ...options };
+
+  const headers = apiKey ? { 'X-API-KEY': apiKey } : {};
+  const url = `https://api.opensea.io/api/v1/events?asset_contract_address=${contractAddress}` +
+    `&event_type=${newOptions.eventType}&only_opensea=${newOptions.onlyOpensea}` +
+    `&limit=${newOptions.limit}&offset=${newOptions.offset}` +
+    `${newOptions.tokenIds?.length ? `&token_ids=${newOptions.tokenIds.join('%2C')}` : ''}`;
+
+  const response = retryFor
+    ? await web2.getWithRetry(url, { headers, keepAlive: true, ...requestOptions }, retryFor, retryInterval)
+    : await web2.get(url, { headers, keepAlive: true, ...requestOptions });
+
+  if (response.data?.asset_events) {
+    return newOptions.convert ? response.data.asset_events.map(obj => convertEvent(obj)) : response.data.asset_events;
+  }
+
+  return { error: true, response };
+}
+
 // HELPER FUNCTIONS
+
+function convertEvent(baseEvent) {
+  const event = { ...baseEvent };
+
+  event.listing_date = new Date(event.created_date);
+  event.listing_time = new Date(event.listing_time);
+  event.listing_short_date = (event.listing_date).toLocaleDateString();
+
+  const listingDecimals = event.payment_token.decimals;
+  event.listing_price = event.starting_price / Math.pow(10, listingDecimals);
+  event.listing_starting_price = event.starting_price / Math.pow(10, listingDecimals);
+  event.listing_ending_price = event.ending_price / Math.pow(10, listingDecimals);
+
+  event.is_listing = event.event_type === 'created';
+  event.is_bundle = event.asset_bundle !== null;
+  event.is_public = !event.is_private;
+
+  return event;
+}
 
 function convertAsset(baseAsset) {
   const nowDate = new Date();
-
   const asset = { ...baseAsset };
 
   // LISTING
@@ -95,7 +141,7 @@ function convertAsset(baseAsset) {
   asset.listing_date = asset?.sell_orders && asset?.sell_orders[0] ? new Date(asset.sell_orders[0].created_date) ?? null : null;
   asset.listing_closing_date = asset?.sell_orders && asset?.sell_orders[0] ? new Date(asset.sell_orders[0].closing_date) : null;
   asset.listing_hours = asset.listing_date ? (nowDate.getTime() - asset.listing_date.getTime()) / (1000 * 3600) : null;
-  asset.listing_days = asset.listing_hours ? asset.listing_hours * 24 : null;
+  asset.listing_days = asset.listing_hours ? asset.listing_hours / 24 : null;
 
   asset.listing_price = listingBasePrice && listingDecimals && listingSymbol === 'ETH' ? listingBasePrice / Math.pow(10, listingDecimals) : null;
   asset.listing_symbol = listingSymbol;
@@ -110,7 +156,7 @@ function convertAsset(baseAsset) {
 
   asset.last_sale_date = asset?.last_sale?.event_timestamp ? new Date(asset?.last_sale?.event_timestamp) : null;
   asset.last_sale_hours = asset.last_sale_date ? (nowDate.getTime() - asset.last_sale_date.getTime()) / (1000 * 3600) : null;
-  asset.last_sale_days = asset.last_sale_hours ? asset.last_sale_hours * 24 : null;
+  asset.last_sale_days = asset.last_sale_hours ? asset.last_sale_hours / 24 : null;
 
   asset.last_sale_price = lastSaleTotalPrice && lastSaleDecimals ? lastSaleTotalPrice / Math.pow(10, lastSaleDecimals) : null;
   asset.last_sale_symbol = asset?.last_sale?.payment_token?.symbol ?? null;
