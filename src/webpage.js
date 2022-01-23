@@ -250,15 +250,17 @@ export function createIndexFile(config) {
 
   <p>
   Keeping this page updated is way too much work!
-  <br>
-  Grifters by XCOPY page will be published here without price data:
+    <br>
+    Grifters by XCOPY rarity page will be published
+    <br>
+    here without updated price data:
   <br><br>
   <b><a href="grifters.html">Grifters by XCOPY rarity rankings</a></b>
   <br><br>
 
     For rarity rankings and price data of <a href="https://async.art/blueprints" target="_blank">all Blueprint collections</a>,
     <br>
-    I can create an updated set of pages for 0.25 ETH.
+    I can create an updated set of pages for a fee.
     <br><br>
     Email: <a href="mailto:0xhstream@gmail.com">0xhstream@gmail.com</a>
     <br><br>
