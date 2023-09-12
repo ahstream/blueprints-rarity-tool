@@ -3,9 +3,9 @@
  * FILE DESCRIPTION
  */
 
-import { log } from './myLibOld/myLogger.js';
-import { countWord, replaceLastOccurrenceOf } from './myLibOld/myUtils.js';
-import * as web3 from './myLibOld/myWeb3.js';
+import { log } from './hlib/logger.js';
+import { countWord, replaceLastOccurrenceOf } from './myLib/myUtils.js';
+import * as web3 from './myLib/myWeb3.js';
 
 const IPFS_URL = 'ipfs://';
 

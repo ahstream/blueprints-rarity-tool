@@ -1,9 +1,9 @@
 import _ from 'lodash';
 
-import { log } from './myLibOld/myLogger.js';
-import * as myURIFetcher from './myLibOld/myURIFetcher.js';
-import { parseRetryAfterSecs, range } from './myLibOld/myUtils.js';
-import * as myWeb2 from './myLibOld/myWeb2.js';
+import { log } from './hlib/logger.js';
+import * as myURIFetcher from './myLib/myURIFetcher.js';
+import { parseRetryAfterSecs, range } from './myLib/myUtils.js';
+import * as myWeb2 from './myLib/myWeb2.js';
 import { createTokenURI, getTokenURI } from './tokenURI.js';
 
 const FETCH_TOKENS_MAX_CONCURRENT = 100;

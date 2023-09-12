@@ -4,8 +4,7 @@ const { join } = require('path');
 import {
   ensureFolder,
   writeJSONFile
-} from './myLibOld/myFileUtils.js';
-import { log } from './myLibOld/myLogger.js';
+} from './hlib/fileutils.js';
 
 export function convertConfig(baseConfig) {
   const config = {

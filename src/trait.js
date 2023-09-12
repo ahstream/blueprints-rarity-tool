@@ -1,5 +1,3 @@
-import { log } from "./myLibOld/myLogger.js";
-
 export const TRAIT_NONE_VALUE = 'None';
 export const TRAIT_COUNT_TYPE = 'Trait Count';
 

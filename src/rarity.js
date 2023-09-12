@@ -1,6 +1,6 @@
 import { Stats } from 'fast-stats';
 
-import { sort } from './myLibOld/myUtils.js';
+import { sort } from './myLib/myUtils.js';
 import { addNoneTraits, TRAIT_COUNT_TYPE } from './trait.js';
 
 export function calcRarity(collection, rules, doCalcOutliers = false) {

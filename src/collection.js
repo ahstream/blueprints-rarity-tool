@@ -1,5 +1,4 @@
 import _ from 'lodash';
-import open from 'open';
 
 import * as debug from './hlib/debug.js';
 import { log } from './hlib/logger.js';

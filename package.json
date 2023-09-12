@@ -1,8 +1,10 @@
 {
-  "name": "scraper-base",
-  "version": "0.0.2",
-  "private": true,
-  "description": "Lorem ipsum dolor sit amet",
+  "name": "blueprints-rarity-tool",
+  "version": "1.0.0",
+  "description": "AsyncArt Blueprints Rarity Tool",
+  "author": "hstream@gmail.com",
+  "license": "COPYRIGHT",  
+  "repository": "github:ahstream/blueprints-rarity-tool",
   "scripts": {
     "test": "jest",
     "foo": "jest",
@@ -16,9 +18,6 @@
     "eslint:report": "eslint \"**/*.{js,ts}\"",
     "eslint:fix": "eslint \"**/*.{js,ts}\" --fix"
   },
-  "keywords": [],
-  "author": "",
-  "license": "Private",
   "dependencies": {
     "api": "^4.2.0",
     "axios": "^0.24.0",

@@ -1,7 +1,7 @@
 import _ from 'lodash';
 
-import { log } from './myLibOld/myLogger.js';
-import { get } from './myLibOld/myWeb2.js';
+import { log } from './hlib/logger.js';
+import { get } from './myLib/myWeb2.js';
 import { getTokenURI } from './tokenURI.js';
 
 // EXPORTED

@@ -1,10 +1,9 @@
 import _ from 'lodash';
 
 import * as opensea from './hlib/opensea.js';
-import { assetsTokenIdsURL } from './hlib/opensea.js';
-import { log } from './myLibOld/myLogger.js';
-import * as myURIFetcher from './myLibOld/myURIFetcher.js';
-import { delay, parseRetryAfterSecs, range } from './myLibOld/myUtils.js';
+import { log } from './hlib/logger.js';
+import * as myURIFetcher from './myLib/myURIFetcher.js';
+import { delay, parseRetryAfterSecs, range } from './myLib/myUtils.js';
 
 const FETCH_ASSETS_MAX_CONCURRENT = Infinity;
 const FETCH_ASSETS_TIMEOUT = 8000;
