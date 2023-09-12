@@ -1,14 +1,10 @@
-# README 
-
-(blueprints-rarity-tool)
-
-## About
+# Blueprints Rarity Tools 
 
 Node.js tool to generate rarity scores for AsyncArt Blueprints art collections.
 
-(Copyright) 2021 hstream@gmail.com
+COPYRIGHT 2021 by hstream@gmail.com
 
-## How to run
+## How to use
 
 ```
 yarn cli fetchCollection --id {COLLECTION_ID}
@@ -20,5 +16,4 @@ npm run cli fetchCollection --id {COLLECTION_ID}
 
 ## Links
 
-- https://github.com/ahstream/blueprints-rarity-tool
 - https://async.market/blueprints
