@@ -6,15 +6,14 @@ import { BASE_ASSET_URI } from './hlib/opensea.js';
 import {
   getAssetsBlockWithRetry,
   getCollectionStatsWithRetry
-} from './hlib/openseaHelpers.js';
-import * as openseaHelpers from './hlib/openseaHelpers.js';
+} from './hlib/openseaHelpersSafe.js';
+import * as openseaHelpers from './hlib/openseaHelpersSafe.js';
 import * as utils from './hlib/utils.js';
 import { getWithRetry } from './hlib/web2.js';
 import { calcRarity } from './rarity.js';
 import { normalizeURI } from './tokenURI.js';
 import { addTokenAttributes, } from './trait.js';
 import * as webpage from './webpage.js';
-import { writeGrifters } from './webpage.js';
 
 const { compareOrderedNum } = require('./hlib/utils.js');
 

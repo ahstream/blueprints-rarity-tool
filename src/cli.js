@@ -13,8 +13,7 @@ const config = require('../config/config.json');
 import * as collection from './collection.js';
 import * as debug from './hlib/debug.js';
 import { log } from './hlib/logger.js';
-import * as openseaHelpers from './hlib/openseaHelpers.js';
-import { getAllEventsWithRetry, getEventBlockWithRetry } from './hlib/openseaHelpers.js';
+import * as openseaHelpers from './hlib/openseaHelpersSafe.js';
 import * as webpage from './webpage.js';
 
 // RUNTIME ----------------------------------------------------------------------------------
