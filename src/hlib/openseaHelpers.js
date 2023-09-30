@@ -6,7 +6,7 @@
 import * as opensea from './opensea.js';
 import { EVENTS_LIMIT } from './opensea.js';
 
-const API_KEY = '34d2961db6c14d319ab19ffc818c8b1b';
+const API_KEY = 'API_KEY';
 const DEFAULT_RETRY_FOR_SEC = 60;
 const DEFAULT_RETRY_INTERVAL_MS = 1000;
 
